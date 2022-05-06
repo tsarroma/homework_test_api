@@ -1,5 +1,6 @@
 import pytest
 import requests
+from jsonschema import validate
 
 base_url = "https://api.openbrewerydb.org/"
 
@@ -43,3 +44,33 @@ def test_filter_brewery_type(brewery_type):
     r = requests.get(url=base_url + "breweries?by_type=" + brewery_type)
     assert r.status_code == 200
     assert r.json()[0]["brewery_type"] == brewery_type
+
+
+def test_api_json_schema():
+    r = requests.get(url=base_url + "breweries/madtree-brewing-cincinnati")
+    schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": "string"},
+            "name": {"type": "string"},
+            "brewery_type": {"type": "string"},
+            "street": {"type": "string"},
+            "address_2": {"type": "null"},
+            "address_3": {"type": "null"},
+            "city": {"type": "string"},
+            "state": {"type": "string"},
+            "county_province": {"type": "null"},
+            "postal_code": {"type": "string"},
+            "country": {"type": "string"},
+            "longitude": {"type": "string"},
+            "latitude": {"type": "string"},
+            "phone": {"type": "string"},
+            "website_url": {"type": "string"},
+            "updated_at": {"type": "string"},
+            "created_at": {"type": "string"}
+        },
+        "required": ["id", "name", "brewery_type", "street", "address_2", "address_3", "city", "state",
+                     "county_province", "postal_code", "country", "longitude", "latitude", "phone", "website_url",
+                     "updated_at", "created_at"]
+    }
+    validate(instance=r.json(), schema=schema)

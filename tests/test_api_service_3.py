@@ -1,5 +1,6 @@
 import pytest
 import requests
+from jsonschema import validate
 
 base_url = "https://jsonplaceholder.typicode.com"
 
@@ -38,3 +39,20 @@ def test_post_req_status_code(title):
                       json={"title": title, "body": "bar", "userId": 1})
     assert r.status_code == 201
     assert r.json()["title"] == title
+
+
+def test_api_json_schema():
+    r = requests.get(url=base_url + "/todos/1")
+    schema = {
+        "type": "object",
+        "properties": {
+            "id": {"type": "number"},
+            "userId": {"type": "number"},
+            "title": {"type": "string"},
+            "completed": {"type": "boolean"}
+        },
+        "required": ["id", "userId", "title", "completed"]
+    }
+    print(r.json())
+    print(schema)
+    validate(instance=r.json(), schema=schema)

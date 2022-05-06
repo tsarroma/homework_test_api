@@ -1,5 +1,6 @@
 import pytest
 import requests
+from jsonschema import validate
 
 base_url = "https://dog.ceo/api"
 
@@ -34,3 +35,23 @@ def test_check_count_img(count):
     r = requests.get(url=base_url + "/breeds/image/random/" + count)
     assert r.status_code == 200
     assert str(len(r.json()["message"])) == count
+
+
+def test_api_json_schema():
+    r = requests.get(url=base_url + "/breed/hound/list")
+    schema = {
+        "type": "object",
+        "properties": {
+            "message": {
+                "type": "array",
+                "maxItems": 7,
+                "minItems": 7,
+                "items": {
+                    "type": "string",
+                }
+            },
+            "status": {"type": "string"},
+        },
+        "required": ["message", "status"]
+    }
+    validate(instance=r.json(), schema=schema)
